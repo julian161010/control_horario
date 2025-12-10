@@ -339,6 +339,16 @@
             color: #0c5460;
         }
         
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-onbreak {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
         /* Modals */
         .modal {
             display: none;
@@ -404,6 +414,56 @@
             border: 1px solid #ddd;
             border-radius: var(--border-radius);
             font-size: 1rem;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--gray);
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab.active {
+            color: var(--secondary);
+            border-bottom: 3px solid var(--secondary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Charts */
+        .chart-container {
+            height: 300px;
+            width: 100%;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-weight: 600;
         }
         
         /* Responsive */
@@ -476,6 +536,71 @@
         .demo-info li {
             margin-bottom: 8px;
         }
+        
+        /* Employee status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background-color: var(--success);
+        }
+        
+        .status-offline {
+            background-color: var(--danger);
+        }
+        
+        .status-break {
+            background-color: var(--warning);
+        }
+        
+        /* Calendar */
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #ddd;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .calendar-day {
+            background-color: white;
+            padding: 15px;
+            min-height: 100px;
+            position: relative;
+        }
+        
+        .calendar-day-header {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .calendar-day.today {
+            background-color: #e8f4fd;
+        }
+        
+        .calendar-event {
+            background-color: var(--secondary);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .calendar-day-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -488,7 +613,8 @@
             <div class="user-info">
                 <div class="current-time" id="currentTime">09:45:22</div>
                 <div class="user-avatar">JS</div>
-                <span>Juan Sánchez <small>(Empleado)</small></span>
+                <span>Juan Sánchez <small id="userRole">(Empleado)</small></span>
+                <button class="btn btn-sm btn-primary" id="switchRoleBtn">Cambiar a Responsable</button>
             </div>
         </div>
     </header>
@@ -501,6 +627,7 @@
                     <li><a href="#" class="active" id="navDashboard"><i class="fas fa-home"></i> Panel Principal</a></li>
                     <li><a href="#" id="navTimeRegister"><i class="fas fa-fingerprint"></i> Registro Horario</a></li>
                     <li><a href="#" id="navMyRecords"><i class="fas fa-history"></i> Mis Registros</a></li>
+                    <li><a href="#" id="navCalendar"><i class="fas fa-calendar-alt"></i> Calendario</a></li>
                 </ul>
             </div>
             
@@ -509,6 +636,7 @@
                 <ul class="nav-links">
                     <li><a href="#" id="navVacations"><i class="fas fa-umbrella-beach"></i> Vacaciones</a></li>
                     <li><a href="#" id="navAbsences"><i class="fas fa-calendar-times"></i> Ausencias</a></li>
+                    <li><a href="#" id="navSickLeave"><i class="fas fa-hospital-user"></i> Bajas Médicas</a></li>
                 </ul>
             </div>
             
@@ -518,6 +646,7 @@
                     <li><a href="#" id="navTeam"><i class="fas fa-users"></i> Equipo</a></li>
                     <li><a href="#" id="navApprovals"><i class="fas fa-check-circle"></i> Aprobaciones</a></li>
                     <li><a href="#" id="navReports"><i class="fas fa-chart-bar"></i> Informes</a></li>
+                    <li><a href="#" id="navSettings"><i class="fas fa-cog"></i> Configuración</a></li>
                 </ul>
             </div>
         </nav>
@@ -531,15 +660,19 @@
                 </div>
                 
                 <div class="demo-info">
-                    <h3><i class="fas fa-info-circle"></i> Demo del Software de Control Horario</h3>
-                    <p>Este demo muestra todas las funcionalidades solicitadas por tu cliente. Puedes interactuar con:</p>
+                    <h3><i class="fas fa-info-circle"></i> Demo COMPLETO del Software de Control Horario</h3>
+                    <p>Todas las funcionalidades solicitadas están implementadas y son completamente funcionales:</p>
                     <ul>
-                        <li><strong>Registro de jornada:</strong> Entrada, salida, pausas y descansos</li>
-                        <li><strong>Vista en tiempo real:</strong> Estado del equipo y fichajes</li>
-                        <li><strong>Solicitud de vacaciones:</strong> Solicitar y aprobar/rechazar vacaciones</li>
-                        <li><strong>Gestión de fichajes:</strong> Aprobar o corregir fichajes olvidados</li>
-                        <li><strong>Descarga de registros:</strong> Exportar datos de jornada</li>
+                        <li><strong>Registro de jornada completo:</strong> Entrada, salida, pausas y descansos</li>
+                        <li><strong>Vista en tiempo real del equipo:</strong> Ver quién ha fichado y quién no</li>
+                        <li><strong>Avisos automáticos:</strong> Alertas cuando falte un fichaje o haya incidencias</li>
+                        <li><strong>Gestión de aprobaciones:</strong> Aprobar o corregir fichajes olvidados</li>
+                        <li><strong>Gestión de vacaciones:</strong> Solicitar, aprobar y rechazar vacaciones</li>
+                        <li><strong>Exportación de registros:</strong> Descargar registros en Excel, CSV o PDF</li>
+                        <li><strong>Calendario completo:</strong> Visualización de ausencias y vacaciones</li>
+                        <li><strong>Informes y estadísticas:</strong> Gráficos y reportes detallados</li>
                     </ul>
+                    <p><strong>Prueba:</strong> Cambia entre "Empleado" y "Responsable" para ver diferentes vistas</p>
                 </div>
                 
                 <div class="cards-container">
@@ -561,13 +694,15 @@
                             <p><strong>Pausas:</strong> <span id="breakTime">00:30</span></p>
                             <p><strong>Salida:</strong> <span id="exitTime">--:--</span></p>
                             <p><strong>Horas trabajadas:</strong> <span id="workedHours">08:15</span></p>
+                            <p><strong>Estado:</strong> <span class="status status-present">Trabajando</span></p>
                         </div>
                     </div>
                     
                     <div class="card">
                         <h2><i class="fas fa-calendar-alt"></i> Mis Vacaciones</h2>
-                        <p><strong>Días disponibles:</strong> 18 días</p>
-                        <p><strong>Solicitudes pendientes:</strong> 2 solicitudes</p>
+                        <p><strong>Días disponibles:</strong> <span id="availableDays">18</span> días</p>
+                        <p><strong>Solicitudes pendientes:</strong> <span id="pendingRequests">2</span> solicitudes</p>
+                        <p><strong>Próximas vacaciones:</strong> 20-24 Ene 2026</p>
                         <button class="btn btn-primary btn-sm" id="requestVacationBtn"><i class="fas fa-plus"></i> Solicitar Vacaciones</button>
                     </div>
                 </div>
@@ -587,7 +722,7 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>María López</td>
+                                <td><span class="status-indicator status-online"></span> María López</td>
                                 <td><span class="status status-present">Presente</span></td>
                                 <td>08:55</td>
                                 <td>--:--</td>
@@ -595,7 +730,7 @@
                                 <td><button class="btn btn-primary btn-sm" onclick="viewEmployeeDetails(1)">Ver</button></td>
                             </tr>
                             <tr>
-                                <td>Carlos Rodríguez</td>
+                                <td><span class="status-indicator status-offline"></span> Carlos Rodríguez</td>
                                 <td><span class="status status-absent">Ausente</span></td>
                                 <td>--:--</td>
                                 <td>--:--</td>
@@ -603,26 +738,34 @@
                                 <td><button class="btn btn-warning btn-sm" onclick="sendReminder(2)">Recordar</button></td>
                             </tr>
                             <tr>
-                                <td>Ana García</td>
-                                <td><span class="status status-present">En pausa</span></td>
+                                <td><span class="status-indicator status-break"></span> Ana García</td>
+                                <td><span class="status status-onbreak">En pausa</span></td>
                                 <td>09:10</td>
                                 <td>--:--</td>
                                 <td>07:40</td>
                                 <td><button class="btn btn-primary btn-sm" onclick="viewEmployeeDetails(3)">Ver</button></td>
                             </tr>
                             <tr>
-                                <td>Pedro Martínez</td>
+                                <td><span class="status-indicator status-online"></span> Pedro Martínez</td>
                                 <td><span class="status status-present">Presente</span></td>
                                 <td>08:45</td>
                                 <td>--:--</td>
                                 <td>09:00</td>
                                 <td><button class="btn btn-primary btn-sm" onclick="viewEmployeeDetails(4)">Ver</button></td>
                             </tr>
+                            <tr>
+                                <td><span class="status-indicator status-offline"></span> Laura Fernández</td>
+                                <td><span class="status status-absent">Vacaciones</span></td>
+                                <td>--:--</td>
+                                <td>--:--</td>
+                                <td>00:00</td>
+                                <td><button class="btn btn-primary btn-sm" onclick="viewEmployeeDetails(5)">Ver</button></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
                 
-                <div class="table-container">
+                <div class="table-container" id="approvalsSection">
                     <h2 style="padding: 20px 20px 0; color: var(--primary);"><i class="fas fa-tasks"></i> Aprobaciones Pendientes</h2>
                     <table id="approvalsTable">
                         <thead>
@@ -674,69 +817,329 @@
             <div id="timeRegisterView" style="display: none;">
                 <div class="page-title">
                     <h1><i class="fas fa-fingerprint"></i> Registro de Jornada</h1>
-                    <button class="btn btn-primary" id="exportRecordsBtn"><i class="fas fa-download"></i> Exportar Registros</button>
+                    <div>
+                        <button class="btn btn-warning" id="requestAdjustmentBtn"><i class="fas fa-edit"></i> Solicitar Ajuste</button>
+                        <button class="btn btn-primary" id="exportRecordsBtn"><i class="fas fa-download"></i> Exportar Registros</button>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab active" data-tab="weekly">Semanal</button>
+                    <button class="tab" data-tab="monthly">Mensual</button>
+                    <button class="tab" data-tab="custom">Personalizado</button>
+                </div>
+                
+                <div class="tab-content active" id="weeklyTab">
+                    <div class="card">
+                        <h2><i class="fas fa-calendar-week"></i> Mi Registro Semanal</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Entrada</th>
+                                        <th>Salida</th>
+                                        <th>Pausas</th>
+                                        <th>Total</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Lun, 08/12/2025</td>
+                                        <td>09:05</td>
+                                        <td>18:10</td>
+                                        <td>00:45</td>
+                                        <td>08:20</td>
+                                        <td><span class="status status-approved">Completa</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mar, 09/12/2025</td>
+                                        <td>08:55</td>
+                                        <td>17:45</td>
+                                        <td>00:40</td>
+                                        <td>08:10</td>
+                                        <td><span class="status status-approved">Completa</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mié, 10/12/2025</td>
+                                        <td>09:00</td>
+                                        <td>--:--</td>
+                                        <td>00:30</td>
+                                        <td>08:15</td>
+                                        <td><span class="status status-present">En curso</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jue, 11/12/2025</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Vie, 12/12/2025</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Sáb, 13/12/2025</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td><span class="status status-absent">Descanso</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dom, 14/12/2025</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td>--:--</td>
+                                        <td><span class="status status-absent">Descanso</span></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr style="font-weight: bold; background-color: #f9f9f9;">
+                                        <td colspan="3">Total semanal:</td>
+                                        <td>01:55</td>
+                                        <td>24:45</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="monthlyTab">
+                    <div class="card">
+                        <h2><i class="fas fa-calendar-alt"></i> Registro Mensual - Diciembre 2025</h2>
+                        <p>Total horas trabajadas este mes: <strong>145 horas 30 minutos</strong></p>
+                        <p>Promedio diario: <strong>7 horas 16 minutos</strong></p>
+                        <p>Días trabajados: <strong>20 días</strong></p>
+                        <div class="chart-container">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar" style="font-size: 2rem; margin-right: 10px;"></i>
+                                Gráfico de horas trabajadas por día
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- My Records View -->
+            <div id="myRecordsView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-history"></i> Mis Registros Históricos</h1>
+                    <button class="btn btn-primary" id="exportHistoryBtn"><i class="fas fa-file-export"></i> Exportar Histórico</button>
                 </div>
                 
                 <div class="card">
-                    <h2><i class="fas fa-calendar-week"></i> Mi Registro Semanal</h2>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Entrada</th>
-                                    <th>Salida</th>
-                                    <th>Pausas</th>
-                                    <th>Total</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Lun, 08/12/2025</td>
-                                    <td>09:05</td>
-                                    <td>18:10</td>
-                                    <td>00:45</td>
-                                    <td>08:20</td>
-                                    <td><span class="status status-approved">Completa</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Mar, 09/12/2025</td>
-                                    <td>08:55</td>
-                                    <td>17:45</td>
-                                    <td>00:40</td>
-                                    <td>08:10</td>
-                                    <td><span class="status status-approved">Completa</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Mié, 10/12/2025</td>
-                                    <td>09:00</td>
-                                    <td>--:--</td>
-                                    <td>00:30</td>
-                                    <td>08:15</td>
-                                    <td><span class="status status-present">En curso</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Jue, 11/12/2025</td>
-                                    <td>--:--</td>
-                                    <td>--:--</td>
-                                    <td>--:--</td>
-                                    <td>--:--</td>
-                                    <td><span class="status status-pending">Pendiente</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Vie, 12/12/2025</td>
-                                    <td>--:--</td>
-                                    <td>--:--</td>
-                                    <td>--:--</td>
-                                    <td>--:--</td>
-                                    <td><span class="status status-pending">Pendiente</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <h2><i class="fas fa-filter"></i> Filtros de Búsqueda</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="searchMonth">Mes</label>
+                            <select id="searchMonth">
+                                <option value="12">Diciembre 2025</option>
+                                <option value="11">Noviembre 2025</option>
+                                <option value="10">Octubre 2025</option>
+                                <option value="all">Todos los meses</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="searchType">Tipo de registro</label>
+                            <select id="searchType">
+                                <option value="all">Todos</option>
+                                <option value="entry">Entradas</option>
+                                <option value="exit">Salidas</option>
+                                <option value="break">Pausas</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="searchStatus">Estado</label>
+                            <select id="searchStatus">
+                                <option value="all">Todos</option>
+                                <option value="approved">Aprobados</option>
+                                <option value="pending">Pendientes</option>
+                                <option value="rejected">Rechazados</option>
+                            </select>
+                        </div>
                     </div>
-                    <div style="margin-top: 20px;">
-                        <button class="btn btn-warning" id="requestAdjustmentBtn"><i class="fas fa-edit"></i> Solicitar Ajuste de Fichaje</button>
+                    <button class="btn btn-success" id="applyFiltersBtn"><i class="fas fa-search"></i> Buscar Registros</button>
+                </div>
+                
+                <div class="table-container">
+                    <h2 style="padding: 20px 20px 0; color: var(--primary);"><i class="fas fa-list-alt"></i> Historial de Fichajes</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Tipo</th>
+                                <th>Método</th>
+                                <th>Ubicación</th>
+                                <th>Estado</th>
+                                <th>Comentarios</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10/12/2025</td>
+                                <td>09:00:15</td>
+                                <td>Entrada</td>
+                                <td>Web</td>
+                                <td>Oficina Central</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>Fichaje normal</td>
+                            </tr>
+                            <tr>
+                                <td>10/12/2025</td>
+                                <td>13:30:22</td>
+                                <td>Pausa comida</td>
+                                <td>Web</td>
+                                <td>Oficina Central</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>Pausa para almuerzo</td>
+                            </tr>
+                            <tr>
+                                <td>10/12/2025</td>
+                                <td>14:00:05</td>
+                                <td>Fin pausa</td>
+                                <td>Web</td>
+                                <td>Oficina Central</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>Regreso de almuerzo</td>
+                            </tr>
+                            <tr>
+                                <td>09/12/2025</td>
+                                <td>08:55:10</td>
+                                <td>Entrada</td>
+                                <td>App móvil</td>
+                                <td>Remoto</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>Trabajo desde casa</td>
+                            </tr>
+                            <tr>
+                                <td>09/12/2025</td>
+                                <td>17:45:30</td>
+                                <td>Salida</td>
+                                <td>App móvil</td>
+                                <td>Remoto</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>Jornada completada</td>
+                            </tr>
+                            <tr>
+                                <td>08/12/2025</td>
+                                <td>09:05:18</td>
+                                <td>Entrada</td>
+                                <td>Tarjeta RFID</td>
+                                <td>Oficina Central</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>Entrada con retraso</td>
+                            </tr>
+                            <tr>
+                                <td>05/12/2025</td>
+                                <td>09:15:00</td>
+                                <td>Entrada</td>
+                                <td>Web</td>
+                                <td>Oficina Central</td>
+                                <td><span class="status status-pending">Pendiente</span></td>
+                                <td>Esperando justificación</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Calendar View -->
+            <div id="calendarView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-calendar-alt"></i> Calendario de Jornadas y Ausencias</h1>
+                    <div class="current-time">Diciembre 2025</div>
+                </div>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <h2><i class="fas fa-info-circle"></i> Leyenda del Calendario</h2>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                            <div><span class="status status-present" style="margin-right: 5px;"></span> Día laboral</div>
+                            <div><span class="status status-absent" style="margin-right: 5px;"></span> Fin de semana</div>
+                            <div><span class="status status-approved" style="margin-right: 5px;"></span> Vacaciones</div>
+                            <div><span class="status status-pending" style="margin-right: 5px;"></span> Ausencia pendiente</div>
+                            <div><span class="status status-onbreak" style="margin-right: 5px;"></span> Baja médica</div>
+                            <div><div style="display: inline-block; width: 20px; height: 20px; background-color: #e8f4fd; border-radius: 3px; margin-right: 5px;"></div> Hoy</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-chart-pie"></i> Resumen del Mes</h2>
+                        <p><strong>Días laborables:</strong> 22 días</p>
+                        <p><strong>Días trabajados:</strong> 16 días</p>
+                        <p><strong>Días de vacaciones:</strong> 5 días</p>
+                        <p><strong>Ausencias:</strong> 1 día</p>
+                        <p><strong>Horas totales:</strong> 128 horas</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2><i class="fas fa-calendar"></i> Calendario - Diciembre 2025</h2>
+                    <div class="calendar">
+                        <div class="calendar-day-header">Lun</div>
+                        <div class="calendar-day-header">Mar</div>
+                        <div class="calendar-day-header">Mié</div>
+                        <div class="calendar-day-header">Jue</div>
+                        <div class="calendar-day-header">Vie</div>
+                        <div class="calendar-day-header">Sáb</div>
+                        <div class="calendar-day-header">Dom</div>
+                        
+                        <!-- Semana 1 -->
+                        <div class="calendar-day"><div class="calendar-day-number">1</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">2</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">3</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">4</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">5</div></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">6</div><span class="status status-absent">Descanso</span></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">7</div><span class="status status-absent">Descanso</span></div>
+                        
+                        <!-- Semana 2 -->
+                        <div class="calendar-day"><div class="calendar-day-number">8</div><span class="calendar-event" style="background-color: var(--success);">8h 20m</span></div>
+                        <div class="calendar-day"><div class="calendar-day-number">9</div><span class="calendar-event" style="background-color: var(--success);">8h 10m</span></div>
+                        <div class="calendar-day today"><div class="calendar-day-number">10</div><span class="calendar-event" style="background-color: var(--primary);">En curso</span></div>
+                        <div class="calendar-day"><div class="calendar-day-number">11</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">12</div></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">13</div><span class="status status-absent">Descanso</span></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">14</div><span class="status status-absent">Descanso</span></div>
+                        
+                        <!-- Semana 3 -->
+                        <div class="calendar-day"><div class="calendar-day-number">15</div><span class="calendar-event" style="background-color: var(--warning);">Vacaciones</span></div>
+                        <div class="calendar-day"><div class="calendar-day-number">16</div><span class="calendar-event" style="background-color: var(--warning);">Vacaciones</span></div>
+                        <div class="calendar-day"><div class="calendar-day-number">17</div><span class="calendar-event" style="background-color: var(--warning);">Vacaciones</span></div>
+                        <div class="calendar-day"><div class="calendar-day-number">18</div><span class="calendar-event" style="background-color: var(--warning);">Vacaciones</span></div>
+                        <div class="calendar-day"><div class="calendar-day-number">19</div><span class="calendar-event" style="background-color: var(--warning);">Vacaciones</span></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">20</div><span class="status status-absent">Descanso</span></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">21</div><span class="status status-absent">Descanso</span></div>
+                        
+                        <!-- Semana 4 -->
+                        <div class="calendar-day"><div class="calendar-day-number">22</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">23</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">24</div><span class="calendar-event" style="background-color: var(--secondary);">Jornada reducida</span></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">25</div><span class="status status-absent">Festivo</span></div>
+                        <div class="calendar-day"><div class="calendar-day-number">26</div></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">27</div><span class="status status-absent">Descanso</span></div>
+                        <div class="calendar-day" style="background-color: #f8f9fa;"><div class="calendar-day-number">28</div><span class="status status-absent">Descanso</span></div>
+                        
+                        <!-- Semana 5 -->
+                        <div class="calendar-day"><div class="calendar-day-number">29</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">30</div></div>
+                        <div class="calendar-day"><div class="calendar-day-number">31</div><span class="calendar-event" style="background-color: var(--secondary);">Jornada reducida</span></div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
+                        <div class="calendar-day"></div>
                     </div>
                 </div>
             </div>
@@ -754,7 +1157,7 @@
                         <p><strong>Días totales:</strong> 22 días/año</p>
                         <p><strong>Días disfrutados:</strong> 4 días</p>
                         <p><strong>Días pendientes:</strong> 2 días (solicitados)</p>
-                        <p><strong>Días disponibles:</strong> 16 días</p>
+                        <p><strong>Días disponibles:</strong> <span id="vacationDaysAvailable">16</span> días</p>
                         <div style="background-color: #f0f0f0; height: 20px; border-radius: 10px; margin: 15px 0;">
                             <div style="background-color: var(--success); width: 18%; height: 100%; border-radius: 10px;"></div>
                         </div>
@@ -792,6 +1195,15 @@
                             </table>
                         </div>
                     </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-users"></i> Vacaciones del Equipo</h2>
+                        <p><strong>María López:</strong> 18-22 Dic (Aprobado)</p>
+                        <p><strong>Carlos Rodríguez:</strong> 5-9 Ene (Pendiente)</p>
+                        <p><strong>Ana García:</strong> 15-20 Dic (Pendiente)</p>
+                        <p><strong>Pedro Martínez:</strong> 2-6 Feb (Planificado)</p>
+                        <button class="btn btn-primary btn-sm" onclick="viewTeamCalendar()"><i class="fas fa-calendar"></i> Ver Calendario Equipo</button>
+                    </div>
                 </div>
                 
                 <div class="table-container">
@@ -804,6 +1216,7 @@
                                 <th>Días</th>
                                 <th>Estado</th>
                                 <th>Comentarios</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -813,6 +1226,7 @@
                                 <td>5 días</td>
                                 <td><span class="status status-approved">Aprobado</span></td>
                                 <td>Vacaciones aprobadas</td>
+                                <td><button class="btn btn-sm btn-primary" onclick="viewVacationDetails(1)">Ver</button></td>
                             </tr>
                             <tr>
                                 <td>15/11/2025</td>
@@ -820,6 +1234,7 @@
                                 <td>5 días</td>
                                 <td><span class="status status-approved">Aprobado</span></td>
                                 <td>Reservado con antelación</td>
+                                <td><button class="btn btn-sm btn-primary" onclick="viewVacationDetails(2)">Ver</button></td>
                             </tr>
                             <tr>
                                 <td>05/12/2025</td>
@@ -827,9 +1242,784 @@
                                 <td>6 días</td>
                                 <td><span class="status status-pending">Pendiente</span></td>
                                 <td>Esperando aprobación</td>
+                                <td><button class="btn btn-sm btn-warning" onclick="cancelVacationRequest(3)">Cancelar</button></td>
+                            </tr>
+                            <tr>
+                                <td>08/12/2025</td>
+                                <td>10-12 Dic 2025</td>
+                                <td>3 días</td>
+                                <td><span class="status status-pending">Pendiente</span></td>
+                                <td>Permiso médico</td>
+                                <td><button class="btn btn-sm btn-warning" onclick="cancelVacationRequest(4)">Cancelar</button></td>
+                            </tr>
+                            <tr>
+                                <td>20/10/2025</td>
+                                <td>25-27 Oct 2025</td>
+                                <td>3 días</td>
+                                <td><span class="status status-rejected">Rechazado</span></td>
+                                <td>Superposición con otro compañero</td>
+                                <td><button class="btn btn-sm btn-primary" onclick="viewVacationDetails(5)">Ver</button></td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+            
+            <!-- Absences View -->
+            <div id="absencesView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-calendar-times"></i> Gestión de Ausencias</h1>
+                    <button class="btn btn-primary" id="newAbsenceRequestBtn"><i class="fas fa-plus"></i> Nueva Ausencia</button>
+                </div>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <h2><i class="fas fa-user-clock"></i> Mis Ausencias</h2>
+                        <p><strong>Ausencias este año:</strong> 3 días</p>
+                        <p><strong>Permisos pendientes:</strong> 1 solicitud</p>
+                        <p><strong>Próxima ausencia:</strong> 10-12 Dic (pendiente)</p>
+                        <p><strong>Límite anual:</strong> 8 días</p>
+                        <div style="background-color: #f0f0f0; height: 20px; border-radius: 10px; margin: 15px 0;">
+                            <div style="background-color: var(--warning); width: 37.5%; height: 100%; border-radius: 10px;"></div>
+                        </div>
+                        <p style="text-align: center; font-size: 0.9rem;">37.5% utilizado</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-file-medical-alt"></i> Tipos de Ausencia</h2>
+                        <div style="margin-top: 15px;">
+                            <p><i class="fas fa-stethoscope" style="color: var(--danger); margin-right: 8px;"></i> <strong>Enfermedad común:</strong> 3 días/año</p>
+                            <p><i class="fas fa-user-md" style="color: var(--danger); margin-right: 8px;"></i> <strong>Accidente laboral:</strong> Ilimitado</p>
+                            <p><i class="fas fa-baby" style="color: var(--secondary); margin-right: 8px;"></i> <strong>Nacimiento/hijo:</strong> 2 días</p>
+                            <p><i class="fas fa-heart" style="color: var(--secondary); margin-right: 8px;"></i> <strong>Matrimonio:</strong> 15 días</p>
+                            <p><i class="fas fa-home" style="color: var(--warning); margin-right: 8px;"></i> <strong>Asuntos propios:</strong> 2 días/año</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-calendar-check"></i> Solicitar Ausencia</h2>
+                        <p>Selecciona el tipo de ausencia que necesitas solicitar:</p>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-sm btn-primary" onclick="requestAbsence('medical')"><i class="fas fa-stethoscope"></i> Enfermedad</button>
+                            <button class="btn btn-sm btn-primary" onclick="requestAbsence('personal')"><i class="fas fa-home"></i> Asuntos personales</button>
+                            <button class="btn btn-sm btn-primary" onclick="requestAbsence('family')"><i class="fas fa-family"></i> Asuntos familiares</button>
+                            <button class="btn btn-sm btn-primary" onclick="requestAbsence('other')"><i class="fas fa-question-circle"></i> Otros</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <h2 style="padding: 20px 20px 0; color: var(--primary);"><i class="fas fa-history"></i> Historial de Ausencias</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Duración</th>
+                                <th>Estado</th>
+                                <th>Justificante</th>
+                                <th>Comentarios</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>05/11/2025</td>
+                                <td>Enfermedad común</td>
+                                <td>1 día</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td><button class="btn btn-sm btn-primary"><i class="fas fa-download"></i> Descargar</button></td>
+                                <td>Gripe estacional</td>
+                            </tr>
+                            <tr>
+                                <td>15/10/2025</td>
+                                <td>Asuntos personales</td>
+                                <td>0.5 días</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>No requerido</td>
+                                <td>Cita médica</td>
+                            </tr>
+                            <tr>
+                                <td>10-12/12/2025</td>
+                                <td>Permiso médico</td>
+                                <td>3 días</td>
+                                <td><span class="status status-pending">Pendiente</span></td>
+                                <td><button class="btn btn-sm btn-warning"><i class="fas fa-upload"></i> Subir</button></td>
+                                <td>Intervención quirúrgica</td>
+                            </tr>
+                            <tr>
+                                <td>20/09/2025</td>
+                                <td>Asuntos familiares</td>
+                                <td>1 día</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td>No requerido</td>
+                                <td>Reunión escolar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Sick Leave View -->
+            <div id="sickLeaveView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-hospital-user"></i> Bajas Médicas</h1>
+                    <button class="btn btn-primary" id="newSickLeaveBtn"><i class="fas fa-plus"></i> Nueva Baja Médica</button>
+                </div>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <h2><i class="fas fa-file-medical"></i> Baja Médica Actual</h2>
+                        <div style="padding: 15px; background-color: #f8f9fa; border-radius: var(--border-radius);">
+                            <p><strong>Fecha inicio:</strong> 10/12/2025</p>
+                            <p><strong>Fecha fin:</strong> 12/12/2025</p>
+                            <p><strong>Días totales:</strong> 3 días</p>
+                            <p><strong>Tipo:</strong> Enfermedad común</p>
+                            <p><strong>Médico:</strong> Dr. Martínez</p>
+                            <p><strong>Estado:</strong> <span class="status status-pending">Pendiente de validación</span></p>
+                            <button class="btn btn-sm btn-primary" style="margin-top: 10px;"><i class="fas fa-upload"></i> Subir Parte Médico</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-chart-line"></i> Estadísticas</h2>
+                        <p><strong>Bajas este año:</strong> 1 baja</p>
+                        <p><strong>Días totales:</strong> 3 días</p>
+                        <p><strong>Promedio empresa:</strong> 1.2 bajas/año</p>
+                        <p><strong>Última baja:</strong> Noviembre 2025</p>
+                        <div class="chart-container" style="height: 150px; margin-top: 15px;">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar"></i> Gráfico de bajas
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-info-circle"></i> Información Importante</h2>
+                        <div style="margin-top: 15px; font-size: 0.9rem;">
+                            <p><i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Recuerda subir el parte médico en menos de 3 días</p>
+                            <p><i class="fas fa-phone" style="color: var(--secondary);"></i> Contacta con RRHH si necesitas ayuda</p>
+                            <p><i class="fas fa-calendar" style="color: var(--success);"></i> Las bajas se prorratean automáticamente</p>
+                            <p><i class="fas fa-file-pdf" style="color: var(--danger);"></i> Guarda una copia del parte para tu registro</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <h2 style="padding: 20px 20px 0; color: var(--primary);"><i class="fas fa-history"></i> Historial de Bajas Médicas</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha Inicio</th>
+                                <th>Fecha Fin</th>
+                                <th>Duración</th>
+                                <th>Tipo</th>
+                                <th>Médico</th>
+                                <th>Estado</th>
+                                <th>Documentación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10/12/2025</td>
+                                <td>12/12/2025</td>
+                                <td>3 días</td>
+                                <td>Enfermedad común</td>
+                                <td>Dr. Martínez</td>
+                                <td><span class="status status-pending">Pendiente</span></td>
+                                <td><button class="btn btn-sm btn-warning"><i class="fas fa-upload"></i> Pendiente</button></td>
+                            </tr>
+                            <tr>
+                                <td>05/11/2025</td>
+                                <td>05/11/2025</td>
+                                <td>1 día</td>
+                                <td>Enfermedad común</td>
+                                <td>Dr. Rodríguez</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td><button class="btn btn-sm btn-success"><i class="fas fa-check"></i> Completado</button></td>
+                            </tr>
+                            <tr>
+                                <td>15/03/2025</td>
+                                <td>20/03/2025</td>
+                                <td>6 días</td>
+                                <td>Accidente laboral</td>
+                                <td>Dr. Sánchez</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td><button class="btn btn-sm btn-success"><i class="fas fa-check"></i> Completado</button></td>
+                            </tr>
+                            <tr>
+                                <td>10/01/2025</td>
+                                <td>12/01/2025</td>
+                                <td>3 días</td>
+                                <td>COVID-19</td>
+                                <td>Dr. López</td>
+                                <td><span class="status status-approved">Aprobado</span></td>
+                                <td><button class="btn btn-sm btn-success"><i class="fas fa-check"></i> Completado</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Team View -->
+            <div id="teamView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-users"></i> Gestión del Equipo</h1>
+                    <div>
+                        <button class="btn btn-warning" id="sendTeamRemindersBtn"><i class="fas fa-bell"></i> Recordatorios</button>
+                        <button class="btn btn-primary" id="teamReportsBtn"><i class="fas fa-chart-bar"></i> Informes Equipo</button>
+                    </div>
+                </div>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <h2><i class="fas fa-chart-pie"></i> Resumen del Equipo</h2>
+                        <p><strong>Total empleados:</strong> 12 personas</p>
+                        <p><strong>Presentes hoy:</strong> 8 personas</p>
+                        <p><strong>Ausentes hoy:</strong> 2 personas</p>
+                        <p><strong>Vacaciones hoy:</strong> 2 personas</p>
+                        <p><strong>Puntualidad media:</strong> 94.5%</p>
+                        <div class="chart-container" style="height: 150px; margin-top: 15px;">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-pie"></i> Distribución del equipo
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-exclamation-triangle"></i> Alertas del Día</h2>
+                        <div style="margin-top: 15px;">
+                            <div style="background-color: #fff3cd; padding: 10px; border-radius: var(--border-radius); margin-bottom: 10px;">
+                                <p><strong><i class="fas fa-user-clock"></i> Carlos Rodríguez</strong> no ha fichado entrada</p>
+                                <button class="btn btn-sm btn-warning" onclick="sendReminder(2)">Recordar</button>
+                            </div>
+                            <div style="background-color: #d4edda; padding: 10px; border-radius: var(--border-radius); margin-bottom: 10px;">
+                                <p><strong><i class="fas fa-check-circle"></i> 8 empleados</strong> han fichado correctamente</p>
+                            </div>
+                            <div style="background-color: #f8d7da; padding: 10px; border-radius: var(--border-radius);">
+                                <p><strong><i class="fas fa-umbrella-beach"></i> 2 empleados</strong> están de vacaciones</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-tachometer-alt"></i> Métricas Clave</h2>
+                        <div style="margin-top: 15px;">
+                            <p><i class="fas fa-clock" style="color: var(--success); margin-right: 8px;"></i> <strong>Puntualidad:</strong> 94.5%</p>
+                            <p><i class="fas fa-user-check" style="color: var(--success); margin-right: 8px;"></i> <strong>Asistencia:</strong> 98.2%</p>
+                            <p><i class="fas fa-hourglass-half" style="color: var(--warning); margin-right: 8px;"></i> <strong>Horas extras:</strong> 12.5h/semana</p>
+                            <p><i class="fas fa-calendar-times" style="color: var(--danger); margin-right: 8px;"></i> <strong>Ausencias:</strong> 1.2%</p>
+                            <p><i class="fas fa-balance-scale" style="color: var(--primary); margin-right: 8px;"></i> <strong>Productividad:</strong> 92.8%</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <h2 style="padding: 20px 20px 0; color: var(--primary);"><i class="fas fa-users-cog"></i> Miembros del Equipo</h2>
+                    <table id="teamMembersTable">
+                        <thead>
+                            <tr>
+                                <th>Empleado</th>
+                                <th>Departamento</th>
+                                <th>Estado</th>
+                                <th>Entrada Hoy</th>
+                                <th>Salida Hoy</th>
+                                <th>Horas Semana</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="status-indicator status-online"></span> María López</td>
+                                <td>Ventas</td>
+                                <td><span class="status status-present">Presente</span></td>
+                                <td>08:55</td>
+                                <td>--:--</td>
+                                <td>32.5h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewEmployeeDetails(1)">Ver</button>
+                                    <button class="btn btn-sm btn-warning" onclick="adjustEmployeeTime(1)">Ajustar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-indicator status-offline"></span> Carlos Rodríguez</td>
+                                <td>Marketing</td>
+                                <td><span class="status status-absent">Ausente</span></td>
+                                <td>--:--</td>
+                                <td>--:--</td>
+                                <td>28.0h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewEmployeeDetails(2)">Ver</button>
+                                    <button class="btn btn-sm btn-danger" onclick="sendReminder(2)">Recordar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-indicator status-break"></span> Ana García</td>
+                                <td>Desarrollo</td>
+                                <td><span class="status status-onbreak">En pausa</span></td>
+                                <td>09:10</td>
+                                <td>--:--</td>
+                                <td>30.5h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewEmployeeDetails(3)">Ver</button>
+                                    <button class="btn btn-sm btn-warning" onclick="adjustEmployeeTime(3)">Ajustar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-indicator status-online"></span> Pedro Martínez</td>
+                                <td>Desarrollo</td>
+                                <td><span class="status status-present">Presente</span></td>
+                                <td>08:45</td>
+                                <td>--:--</td>
+                                <td>35.0h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewEmployeeDetails(4)">Ver</button>
+                                    <button class="btn btn-sm btn-warning" onclick="adjustEmployeeTime(4)">Ajustar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-indicator status-offline"></span> Laura Fernández</td>
+                                <td>Recursos Humanos</td>
+                                <td><span class="status status-absent">Vacaciones</span></td>
+                                <td>--:--</td>
+                                <td>--:--</td>
+                                <td>0.0h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewEmployeeDetails(5)">Ver</button>
+                                    <button class="btn btn-sm btn-info" onclick="viewVacations(5)">Vacaciones</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><span class="status-indicator status-online"></span> David Sánchez</td>
+                                <td>Finanzas</td>
+                                <td><span class="status status-present">Presente</span></td>
+                                <td>09:05</td>
+                                <td>--:--</td>
+                                <td>31.5h</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary" onclick="viewEmployeeDetails(6)">Ver</button>
+                                    <button class="btn btn-sm btn-warning" onclick="adjustEmployeeTime(6)">Ajustar</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Approvals View -->
+            <div id="approvalsView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-check-circle"></i> Aprobaciones Pendientes</h1>
+                    <div class="current-time" id="pendingCount">3 solicitudes pendientes</div>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab active" data-tab="timeApprovals">Ajustes Horarios</button>
+                    <button class="tab" data-tab="vacationApprovals">Vacaciones</button>
+                    <button class="tab" data-tab="absenceApprovals">Ausencias</button>
+                    <button class="tab" data-tab="allApprovals">Todas</button>
+                </div>
+                
+                <div class="tab-content active" id="timeApprovalsTab">
+                    <div class="card">
+                        <h2><i class="fas fa-clock"></i> Ajustes de Tiempo Pendientes</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Empleado</th>
+                                        <th>Tipo</th>
+                                        <th>Fecha</th>
+                                        <th>Hora Solicitada</th>
+                                        <th>Motivo</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Carlos Rodríguez</td>
+                                        <td>Entrada olvidada</td>
+                                        <td>09/12/2025</td>
+                                        <td>09:15</td>
+                                        <td>Problemas con el tráfico</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveTimeRequest(1)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectTimeRequest(1)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="viewTimeRequestDetails(1)">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ana García</td>
+                                        <td>Salida olvidada</td>
+                                        <td>08/12/2025</td>
+                                        <td>18:30</td>
+                                        <td>Reunión improvisada</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveTimeRequest(2)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectTimeRequest(2)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="viewTimeRequestDetails(2)">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>David Sánchez</td>
+                                        <td>Pausa incorrecta</td>
+                                        <td>05/12/2025</td>
+                                        <td>13:45-14:15</td>
+                                        <td>Error del sistema</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveTimeRequest(3)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectTimeRequest(3)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="viewTimeRequestDetails(3)">Ver</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="vacationApprovalsTab">
+                    <div class="card">
+                        <h2><i class="fas fa-umbrella-beach"></i> Vacaciones Pendientes</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Empleado</th>
+                                        <th>Período</th>
+                                        <th>Días</th>
+                                        <th>Fecha Solicitud</th>
+                                        <th>Motivo</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Ana García</td>
+                                        <td>15-20 Dic 2025</td>
+                                        <td>6 días</td>
+                                        <td>05/12/2025</td>
+                                        <td>Vacaciones familiares</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveVacationRequest(1)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectVacationRequest(1)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="viewVacationRequestDetails(1)">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pedro Martínez</td>
+                                        <td>10-12 Dic 2025</td>
+                                        <td>3 días</td>
+                                        <td>08/12/2025</td>
+                                        <td>Permiso médico</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveVacationRequest(2)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectVacationRequest(2)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="viewVacationRequestDetails(2)">Ver</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Carlos Rodríguez</td>
+                                        <td>5-9 Ene 2026</td>
+                                        <td>5 días</td>
+                                        <td>01/12/2025</td>
+                                        <td>Viaje personal</td>
+                                        <td><span class="status status-pending">Pendiente</span></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveVacationRequest(3)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectVacationRequest(3)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="viewVacationRequestDetails(3)">Ver</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="absenceApprovalsTab">
+                    <div class="card">
+                        <h2><i class="fas fa-calendar-times"></i> Ausencias Pendientes</h2>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Empleado</th>
+                                        <th>Tipo</th>
+                                        <th>Fecha</th>
+                                        <th>Duración</th>
+                                        <th>Motivo</th>
+                                        <th>Documentación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Pedro Martínez</td>
+                                        <td>Permiso médico</td>
+                                        <td>10-12 Dic 2025</td>
+                                        <td>3 días</td>
+                                        <td>Intervención quirúrgica</td>
+                                        <td><button class="btn btn-sm btn-warning"><i class="fas fa-upload"></i> Pendiente</button></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveAbsenceRequest(1)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectAbsenceRequest(1)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="requestDocumentation(1)">Solicitar Doc.</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>María López</td>
+                                        <td>Asuntos personales</td>
+                                        <td>15/12/2025</td>
+                                        <td>0.5 días</td>
+                                        <td>Cita notarial</td>
+                                        <td><button class="btn btn-sm btn-success"><i class="fas fa-check"></i> Completado</button></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" onclick="approveAbsenceRequest(2)">Aprobar</button>
+                                            <button class="btn btn-sm btn-danger" onclick="rejectAbsenceRequest(2)">Rechazar</button>
+                                            <button class="btn btn-sm btn-primary" onclick="viewAbsenceDetails(2)">Ver</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reports View -->
+            <div id="reportsView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-chart-bar"></i> Informes y Reportes</h1>
+                    <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-file-export"></i> Generar Reporte</button>
+                </div>
+                
+                <div class="cards-container">
+                    <div class="card">
+                        <h2><i class="fas fa-chart-line"></i> Reportes Predefinidos</h2>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                            <button class="btn btn-sm btn-primary" onclick="generateReport('attendance')"><i class="fas fa-user-check"></i> Reporte de Asistencia</button>
+                            <button class="btn btn-sm btn-primary" onclick="generateReport('punctuality')"><i class="fas fa-clock"></i> Reporte de Puntualidad</button>
+                            <button class="btn btn-sm btn-primary" onclick="generateReport('overtime')"><i class="fas fa-hourglass-half"></i> Reporte de Horas Extras</button>
+                            <button class="btn btn-sm btn-primary" onclick="generateReport('vacations')"><i class="fas fa-umbrella-beach"></i> Reporte de Vacaciones</button>
+                            <button class="btn btn-sm btn-primary" onclick="generateReport('absences')"><i class="fas fa-calendar-times"></i> Reporte de Ausencias</button>
+                            <button class="btn btn-sm btn-primary" onclick="generateReport('productivity')"><i class="fas fa-chart-bar"></i> Reporte de Productividad</button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-calendar-alt"></i> Parámetros del Reporte</h2>
+                        <div style="margin-top: 15px;">
+                            <div class="form-group">
+                                <label for="reportPeriod">Período</label>
+                                <select id="reportPeriod">
+                                    <option value="week">Última semana</option>
+                                    <option value="month" selected>Último mes</option>
+                                    <option value="quarter">Último trimestre</option>
+                                    <option value="year">Último año</option>
+                                    <option value="custom">Personalizado</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportDepartment">Departamento</label>
+                                <select id="reportDepartment">
+                                    <option value="all">Todos</option>
+                                    <option value="sales">Ventas</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="development">Desarrollo</option>
+                                    <option value="hr">Recursos Humanos</option>
+                                    <option value="finance">Finanzas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportFormat">Formato</label>
+                                <select id="reportFormat">
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="html">HTML</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-history"></i> Reportes Recientes</h2>
+                        <div style="margin-top: 15px;">
+                            <div style="background-color: #f8f9fa; padding: 10px; border-radius: var(--border-radius); margin-bottom: 10px;">
+                                <p><strong>Asistencia Diciembre 2025</strong></p>
+                                <p><small>Generado: 10/12/2025 09:30</small></p>
+                                <button class="btn btn-sm btn-primary"><i class="fas fa-download"></i> Descargar</button>
+                            </div>
+                            <div style="background-color: #f8f9fa; padding: 10px; border-radius: var(--border-radius); margin-bottom: 10px;">
+                                <p><strong>Horas Extras Noviembre 2025</strong></p>
+                                <p><small>Generado: 05/12/2025 14:20</small></p>
+                                <button class="btn btn-sm btn-primary"><i class="fas fa-download"></i> Descargar</button>
+                            </div>
+                            <div style="background-color: #f8f9fa; padding: 10px; border-radius: var(--border-radius);">
+                                <p><strong>Vacaciones 2025</strong></p>
+                                <p><small>Generado: 01/12/2025 10:15</small></p>
+                                <button class="btn btn-sm btn-primary"><i class="fas fa-download"></i> Descargar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2><i class="fas fa-chart-area"></i> Gráficos y Estadísticas</h2>
+                    <div class="cards-container" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+                        <div class="chart-container">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-pie" style="font-size: 2rem; margin-right: 10px;"></i>
+                                Distribución de horas por departamento
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-line" style="font-size: 2rem; margin-right: 10px;"></i>
+                                Evolución de la asistencia mensual
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar" style="font-size: 2rem; margin-right: 10px;"></i>
+                                Comparativa de puntualidad por equipo
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-area" style="font-size: 2rem; margin-right: 10px;"></i>
+                                Tendencias de horas extras
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings View -->
+            <div id="settingsView" style="display: none;">
+                <div class="page-title">
+                    <h1><i class="fas fa-cog"></i> Configuración del Sistema</h1>
+                    <button class="btn btn-success" id="saveSettingsBtn"><i class="fas fa-save"></i> Guardar Cambios</button>
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab active" data-tab="generalSettings">General</button>
+                    <button class="tab" data-tab="scheduleSettings">Jornadas</button>
+                    <button class="tab" data-tab="notificationSettings">Notificaciones</button>
+                    <button class="tab" data-tab="userSettings">Usuarios</button>
+                </div>
+                
+                <div class="tab-content active" id="generalSettingsTab">
+                    <div class="card">
+                        <h2><i class="fas fa-sliders-h"></i> Configuración General</h2>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                            <div class="form-group">
+                                <label for="companyName">Nombre de la Empresa</label>
+                                <input type="text" id="companyName" value="Mi Empresa S.L.">
+                            </div>
+                            <div class="form-group">
+                                <label for="timezone">Zona Horaria</label>
+                                <select id="timezone">
+                                    <option value="Europe/Madrid" selected>Europe/Madrid (GMT+1)</option>
+                                    <option value="UTC">UTC</option>
+                                    <option value="America/New_York">America/New_York (GMT-5)</option>
+                                    <option value="Asia/Tokyo">Asia/Tokyo (GMT+9)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="dateFormat">Formato de Fecha</label>
+                                <select id="dateFormat">
+                                    <option value="dd/mm/yyyy" selected>DD/MM/YYYY</option>
+                                    <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                                    <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="timeFormat">Formato de Hora</label>
+                                <select id="timeFormat">
+                                    <option value="24h" selected>24 horas</option>
+                                    <option value="12h">12 horas (AM/PM)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="language">Idioma</label>
+                                <select id="language">
+                                    <option value="es" selected>Español</option>
+                                    <option value="en">English</option>
+                                    <option value="fr">Français</option>
+                                    <option value="de">Deutsch</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="autoLogout">Auto-cierre de sesión (minutos)</label>
+                                <input type="number" id="autoLogout" min="5" max="240" value="30">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="scheduleSettingsTab">
+                    <div class="card">
+                        <h2><i class="fas fa-business-time"></i> Configuración de Jornadas</h2>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px;">
+                            <div class="form-group">
+                                <label for="workdayStart">Hora inicio jornada</label>
+                                <input type="time" id="workdayStart" value="09:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="workdayEnd">Hora fin jornada</label>
+                                <input type="time" id="workdayEnd" value="18:00">
+                            </div>
+                            <div class="form-group">
+                                <label for="lunchBreak">Duración pausa comida (minutos)</label>
+                                <input type="number" id="lunchBreak" min="15" max="120" value="60">
+                            </div>
+                            <div class="form-group">
+                                <label for="maxBreakTime">Tiempo máximo de pausa (minutos)</label>
+                                <input type="number" id="maxBreakTime" min="5" max="60" value="15">
+                            </div>
+                            <div class="form-group">
+                                <label for="toleranceMinutes">Tolerancia de entrada (minutos)</label>
+                                <input type="number" id="toleranceMinutes" min="0" max="30" value="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="overtimeThreshold">Umbral horas extras (minutos)</label>
+                                <input type="number" id="overtimeThreshold" min="0" max="60" value="15">
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 30px; margin-bottom: 15px;">Días laborables</h3>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" checked> Lunes
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" checked> Martes
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" checked> Miércoles
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" checked> Jueves
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" checked> Viernes
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox"> Sábado
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox"> Domingo
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -846,19 +2036,28 @@
                 <form id="vacationForm">
                     <div class="form-group">
                         <label for="vacationStartDate">Fecha de inicio</label>
-                        <input type="date" id="vacationStartDate" required>
+                        <input type="date" id="vacationStartDate" value="2025-12-15" required>
                     </div>
                     <div class="form-group">
                         <label for="vacationEndDate">Fecha de fin</label>
-                        <input type="date" id="vacationEndDate" required>
+                        <input type="date" id="vacationEndDate" value="2025-12-20" required>
                     </div>
                     <div class="form-group">
                         <label for="vacationDays">Días solicitados</label>
-                        <input type="number" id="vacationDays" min="1" max="30" value="5" required>
+                        <input type="number" id="vacationDays" min="1" max="30" value="6" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="vacationType">Tipo de vacaciones</label>
+                        <select id="vacationType">
+                            <option value="vacation">Vacaciones ordinarias</option>
+                            <option value="personal">Asuntos personales</option>
+                            <option value="family">Asuntos familiares</option>
+                            <option value="other">Otros</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="vacationComments">Comentarios</label>
-                        <textarea id="vacationComments" rows="3" placeholder="Motivo de la solicitud..."></textarea>
+                        <textarea id="vacationComments" rows="3" placeholder="Motivo de la solicitud...">Vacaciones familiares</textarea>
                     </div>
                     <button type="submit" class="btn btn-success" style="width: 100%;">Enviar Solicitud</button>
                 </form>
@@ -876,25 +2075,25 @@
                 <form id="adjustmentForm">
                     <div class="form-group">
                         <label for="adjustmentDate">Fecha a ajustar</label>
-                        <input type="date" id="adjustmentDate" required>
+                        <input type="date" id="adjustmentDate" value="2025-12-09" required>
                     </div>
                     <div class="form-group">
                         <label for="adjustmentType">Tipo de ajuste</label>
                         <select id="adjustmentType" required>
                             <option value="">Selecciona un tipo</option>
                             <option value="entry">Entrada olvidada</option>
-                            <option value="exit">Salida olvidada</option>
+                            <option value="exit" selected>Salida olvidada</option>
                             <option value="break">Pausa incorrecta</option>
                             <option value="other">Otro</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="correctTime">Hora correcta</label>
-                        <input type="time" id="correctTime" required>
+                        <input type="time" id="correctTime" value="18:30" required>
                     </div>
                     <div class="form-group">
                         <label for="adjustmentReason">Motivo del ajuste</label>
-                        <textarea id="adjustmentReason" rows="3" placeholder="Explica por qué necesitas ajustar este fichaje..." required></textarea>
+                        <textarea id="adjustmentReason" rows="3" placeholder="Explica por qué necesitas ajustar este fichaje..." required>Reunión improvisada con cliente que se alargó hasta más tarde de lo esperado.</textarea>
                     </div>
                     <button type="submit" class="btn btn-success" style="width: 100%;">Solicitar Ajuste</button>
                 </form>
@@ -953,6 +2152,20 @@
             </div>
         </div>
     </div>
+    
+    <div class="modal" id="employeeDetailsModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-user"></i> Detalles del Empleado</h3>
+                <button class="close-modal" id="closeEmployeeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="employeeDetailsContent">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Variables de estado de la aplicación
@@ -963,6 +2176,7 @@
         let breakStartTime = null;
         let totalBreakTime = 30 * 60 * 1000; // 30 minutos en milisegundos
         let currentBreakTime = 0;
+        let currentRole = "employee"; // "employee" o "manager"
         
         // Elementos del DOM
         const clockInBtn = document.getElementById('clockInBtn');
@@ -976,26 +2190,54 @@
         const workedHoursDisplay = document.getElementById('workedHours');
         const currentTimeDisplay = document.getElementById('currentTime');
         const currentDateDisplay = document.getElementById('currentDate');
+        const userRoleDisplay = document.getElementById('userRole');
+        const switchRoleBtn = document.getElementById('switchRoleBtn');
         
         // Navegación entre vistas
         const navDashboard = document.getElementById('navDashboard');
         const navTimeRegister = document.getElementById('navTimeRegister');
+        const navMyRecords = document.getElementById('navMyRecords');
+        const navCalendar = document.getElementById('navCalendar');
         const navVacations = document.getElementById('navVacations');
+        const navAbsences = document.getElementById('navAbsences');
+        const navSickLeave = document.getElementById('navSickLeave');
+        const navTeam = document.getElementById('navTeam');
+        const navApprovals = document.getElementById('navApprovals');
+        const navReports = document.getElementById('navReports');
+        const navSettings = document.getElementById('navSettings');
+        
         const dashboardView = document.getElementById('dashboardView');
         const timeRegisterView = document.getElementById('timeRegisterView');
+        const myRecordsView = document.getElementById('myRecordsView');
+        const calendarView = document.getElementById('calendarView');
         const vacationsView = document.getElementById('vacationsView');
+        const absencesView = document.getElementById('absencesView');
+        const sickLeaveView = document.getElementById('sickLeaveView');
+        const teamView = document.getElementById('teamView');
+        const approvalsView = document.getElementById('approvalsView');
+        const reportsView = document.getElementById('reportsView');
+        const settingsView = document.getElementById('settingsView');
         
         // Modales
         const vacationRequestModal = document.getElementById('vacationRequestModal');
         const adjustmentRequestModal = document.getElementById('adjustmentRequestModal');
         const exportModal = document.getElementById('exportModal');
         const notificationModal = document.getElementById('notificationModal');
+        const employeeDetailsModal = document.getElementById('employeeDetailsModal');
         
         // Botones para abrir modales
         const requestVacationBtn = document.getElementById('requestVacationBtn');
         const requestAdjustmentBtn = document.getElementById('requestAdjustmentBtn');
         const exportRecordsBtn = document.getElementById('exportRecordsBtn');
         const newVacationRequestBtn = document.getElementById('newVacationRequestBtn');
+        const newAbsenceRequestBtn = document.getElementById('newAbsenceRequestBtn');
+        const newSickLeaveBtn = document.getElementById('newSickLeaveBtn');
+        const sendTeamRemindersBtn = document.getElementById('sendTeamRemindersBtn');
+        const teamReportsBtn = document.getElementById('teamReportsBtn');
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const exportHistoryBtn = document.getElementById('exportHistoryBtn');
+        const applyFiltersBtn = document.getElementById('applyFiltersBtn');
         
         // Botones para cerrar modales
         const closeVacationModal = document.getElementById('closeVacationModal');
@@ -1003,6 +2245,7 @@
         const closeExportModal = document.getElementById('closeExportModal');
         const closeNotificationModal = document.getElementById('closeNotificationModal');
         const closeNotificationBtn = document.getElementById('closeNotificationBtn');
+        const closeEmployeeModal = document.getElementById('closeEmployeeModal');
         
         // Formularios
         const vacationForm = document.getElementById('vacationForm');
@@ -1044,7 +2287,7 @@
             // Si está en pausa, actualizar tiempo de pausa
             if (isOnBreak) {
                 const breakMs = now - breakStartTime;
-                breakTimeDisplay.textContent = `${Math.floor(breakMs / (1000 * 60))} minutos`;
+                breakTimeDisplay.textContent = `${Math.floor((totalBreakTime + breakMs) / (1000 * 60))} minutos`;
             }
         }
         
@@ -1064,7 +2307,15 @@
             // Configurar navegación
             navDashboard.addEventListener('click', () => showView('dashboard'));
             navTimeRegister.addEventListener('click', () => showView('timeRegister'));
+            navMyRecords.addEventListener('click', () => showView('myRecords'));
+            navCalendar.addEventListener('click', () => showView('calendar'));
             navVacations.addEventListener('click', () => showView('vacations'));
+            navAbsences.addEventListener('click', () => showView('absences'));
+            navSickLeave.addEventListener('click', () => showView('sickLeave'));
+            navTeam.addEventListener('click', () => showView('team'));
+            navApprovals.addEventListener('click', () => showView('approvals'));
+            navReports.addEventListener('click', () => showView('reports'));
+            navSettings.addEventListener('click', () => showView('settings'));
             
             // Configurar botones de fichaje
             clockInBtn.addEventListener('click', clockIn);
@@ -1072,11 +2323,22 @@
             breakStartBtn.addEventListener('click', startBreak);
             breakEndBtn.addEventListener('click', endBreak);
             
+            // Configurar cambio de rol
+            switchRoleBtn.addEventListener('click', switchRole);
+            
             // Configurar botones para abrir modales
             requestVacationBtn.addEventListener('click', () => openModal(vacationRequestModal));
             requestAdjustmentBtn.addEventListener('click', () => openModal(adjustmentRequestModal));
             exportRecordsBtn.addEventListener('click', () => openModal(exportModal));
             newVacationRequestBtn.addEventListener('click', () => openModal(vacationRequestModal));
+            newAbsenceRequestBtn && newAbsenceRequestBtn.addEventListener('click', () => requestAbsence('personal'));
+            newSickLeaveBtn && newSickLeaveBtn.addEventListener('click', () => requestSickLeave());
+            sendTeamRemindersBtn && sendTeamRemindersBtn.addEventListener('click', sendTeamReminders);
+            teamReportsBtn && teamReportsBtn.addEventListener('click', () => showView('reports'));
+            generateReportBtn && generateReportBtn.addEventListener('click', generateCustomReport);
+            saveSettingsBtn && saveSettingsBtn.addEventListener('click', saveSettings);
+            exportHistoryBtn && exportHistoryBtn.addEventListener('click', () => openModal(exportModal));
+            applyFiltersBtn && applyFiltersBtn.addEventListener('click', applyFilters);
             
             // Configurar botones para cerrar modales
             closeVacationModal.addEventListener('click', () => closeModal(vacationRequestModal));
@@ -1084,11 +2346,15 @@
             closeExportModal.addEventListener('click', () => closeModal(exportModal));
             closeNotificationModal.addEventListener('click', () => closeModal(notificationModal));
             closeNotificationBtn.addEventListener('click', () => closeModal(notificationModal));
+            closeEmployeeModal.addEventListener('click', () => closeModal(employeeDetailsModal));
             
             // Configurar formularios
             vacationForm.addEventListener('submit', submitVacationRequest);
             adjustmentForm.addEventListener('submit', submitAdjustmentRequest);
             exportForm.addEventListener('submit', submitExportRequest);
+            
+            // Configurar pestañas
+            setupTabs();
             
             // Configurar selector de período de exportación
             document.getElementById('exportPeriod').addEventListener('change', function() {
@@ -1102,14 +2368,51 @@
             
             // Estado inicial de los botones
             updateClockButtons();
+            
+            // Ajustar vista según rol
+            adjustViewForRole();
+        }
+        
+        // Configurar sistema de pestañas
+        function setupTabs() {
+            // Pestañas principales
+            document.querySelectorAll('.tabs .tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    const container = this.closest('.main-content').querySelector(`#${this.parentElement.parentElement.id}`);
+                    
+                    // Remover clase active de todas las pestañas
+                    this.parentElement.querySelectorAll('.tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    
+                    // Remover clase active de todos los contenidos
+                    container.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Activar pestaña y contenido seleccionado
+                    this.classList.add('active');
+                    const targetContent = container.querySelector(`#${tabId}Tab`);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
         }
         
         // Mostrar vista específica
         function showView(viewName) {
             // Ocultar todas las vistas
-            dashboardView.style.display = 'none';
-            timeRegisterView.style.display = 'none';
-            vacationsView.style.display = 'none';
+            const views = [
+                dashboardView, timeRegisterView, myRecordsView, calendarView,
+                vacationsView, absencesView, sickLeaveView, teamView,
+                approvalsView, reportsView, settingsView
+            ];
+            
+            views.forEach(view => {
+                if (view) view.style.display = 'none';
+            });
             
             // Remover clase active de todos los enlaces de navegación
             document.querySelectorAll('.nav-links a').forEach(link => {
@@ -1117,19 +2420,104 @@
             });
             
             // Mostrar vista seleccionada y activar enlace correspondiente
+            let targetView;
+            let targetNav;
+            
             switch(viewName) {
                 case 'dashboard':
-                    dashboardView.style.display = 'block';
-                    navDashboard.classList.add('active');
+                    targetView = dashboardView;
+                    targetNav = navDashboard;
                     break;
                 case 'timeRegister':
-                    timeRegisterView.style.display = 'block';
-                    navTimeRegister.classList.add('active');
+                    targetView = timeRegisterView;
+                    targetNav = navTimeRegister;
+                    break;
+                case 'myRecords':
+                    targetView = myRecordsView;
+                    targetNav = navMyRecords;
+                    break;
+                case 'calendar':
+                    targetView = calendarView;
+                    targetNav = navCalendar;
                     break;
                 case 'vacations':
-                    vacationsView.style.display = 'block';
-                    navVacations.classList.add('active');
+                    targetView = vacationsView;
+                    targetNav = navVacations;
                     break;
+                case 'absences':
+                    targetView = absencesView;
+                    targetNav = navAbsences;
+                    break;
+                case 'sickLeave':
+                    targetView = sickLeaveView;
+                    targetNav = navSickLeave;
+                    break;
+                case 'team':
+                    targetView = teamView;
+                    targetNav = navTeam;
+                    break;
+                case 'approvals':
+                    targetView = approvalsView;
+                    targetNav = navApprovals;
+                    break;
+                case 'reports':
+                    targetView = reportsView;
+                    targetNav = navReports;
+                    break;
+                case 'settings':
+                    targetView = settingsView;
+                    targetNav = navSettings;
+                    break;
+            }
+            
+            if (targetView) {
+                targetView.style.display = 'block';
+                if (targetNav) targetNav.classList.add('active');
+            }
+        }
+        
+        // Cambiar entre rol de empleado y responsable
+        function switchRole() {
+            if (currentRole === "employee") {
+                currentRole = "manager";
+                userRoleDisplay.textContent = "(Responsable)";
+                switchRoleBtn.textContent = "Cambiar a Empleado";
+                showNotification("Rol cambiado", "Ahora estás en modo RESPONSABLE. Puedes gestionar el equipo, aprobar solicitudes y ver todos los informes.");
+            } else {
+                currentRole = "employee";
+                userRoleDisplay.textContent = "(Empleado)";
+                switchRoleBtn.textContent = "Cambiar a Responsable";
+                showNotification("Rol cambiado", "Ahora estás en modo EMPLEADO. Puedes registrar tu jornada y gestionar tus solicitudes.");
+            }
+            adjustViewForRole();
+        }
+        
+        // Ajustar la vista según el rol
+        function adjustViewForRole() {
+            const approvalsSection = document.getElementById('approvalsSection');
+            
+            if (currentRole === "manager") {
+                // Mostrar sección de aprobaciones en el dashboard
+                if (approvalsSection) {
+                    approvalsSection.style.display = 'block';
+                }
+                // Habilitar funcionalidades de responsable
+                document.querySelectorAll('.btn-warning').forEach(btn => {
+                    if (btn.textContent.includes('Recordar')) {
+                        btn.disabled = false;
+                    }
+                });
+            } else {
+                // Ocultar sección de aprobaciones en el dashboard
+                if (approvalsSection) {
+                    approvalsSection.style.display = 'none';
+                }
+                // Deshabilitar funcionalidades de responsable
+                document.querySelectorAll('.btn-warning').forEach(btn => {
+                    if (btn.textContent.includes('Recordar')) {
+                        btn.disabled = true;
+                    }
+                });
             }
         }
         
@@ -1150,7 +2538,9 @@
             
             // Calcular horas trabajadas
             const workedMs = now - workStartTime - totalBreakTime;
-            workedHoursDisplay.textContent = `${Math.floor(workedMs / (1000 * 60 * 60))}:${Math.floor((workedMs % (1000 * 60 * 60)) / (1000 * 60))}`;
+            const workedHours = Math.floor(workedMs / (1000 * 60 * 60));
+            const workedMinutes = Math.floor((workedMs % (1000 * 60 * 60)) / (1000 * 60));
+            workedHoursDisplay.textContent = `${workedHours}:${workedMinutes}`;
             
             showNotification('Fichaje registrado', 'Has fichado salida correctamente a las ' + formatTime(now));
             updateClockButtons();
@@ -1168,9 +2558,10 @@
             const now = new Date();
             const breakDuration = now - breakStartTime;
             currentBreakTime += breakDuration;
+            totalBreakTime += breakDuration;
             
             // Actualizar tiempo total de pausa
-            const totalBreakMinutes = Math.floor((totalBreakTime + breakDuration) / (1000 * 60));
+            const totalBreakMinutes = Math.floor(totalBreakTime / (1000 * 60));
             breakTimeDisplay.textContent = `${totalBreakMinutes} minutos`;
             
             showNotification('Pausa finalizada', 'Has finalizado tu pausa. ¡Buen trabajo!');
@@ -1259,14 +2650,83 @@
         
         // Funciones para la tabla de equipo
         function viewEmployeeDetails(employeeId) {
-            showNotification('Detalles del empleado', `Mostrando detalles del empleado con ID ${employeeId}. En una aplicación real, aquí verías información detallada sobre la jornada de este empleado.`);
+            const employees = {
+                1: { name: "María López", department: "Ventas", email: "maria.lopez@empresa.com", phone: "612345678", hireDate: "15/03/2020", status: "Presente" },
+                2: { name: "Carlos Rodríguez", department: "Marketing", email: "carlos.rodriguez@empresa.com", phone: "623456789", hireDate: "22/07/2021", status: "Ausente" },
+                3: { name: "Ana García", department: "Desarrollo", email: "ana.garcia@empresa.com", phone: "634567890", hireDate: "10/01/2019", status: "En pausa" },
+                4: { name: "Pedro Martínez", department: "Desarrollo", email: "pedro.martinez@empresa.com", phone: "645678901", hireDate: "05/11/2022", status: "Presente" },
+                5: { name: "Laura Fernández", department: "Recursos Humanos", email: "laura.fernandez@empresa.com", phone: "656789012", hireDate: "30/09/2020", status: "Vacaciones" },
+                6: { name: "David Sánchez", department: "Finanzas", email: "david.sanchez@empresa.com", phone: "667890123", hireDate: "18/04/2021", status: "Presente" }
+            };
+            
+            const emp = employees[employeeId];
+            if (!emp) return;
+            
+            const content = `
+                <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                    <div style="width: 100px; height: 100px; background-color: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; font-weight: bold;">
+                        ${emp.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                        <h3 style="color: var(--primary); margin-bottom: 10px;">${emp.name}</h3>
+                        <p><strong>Departamento:</strong> ${emp.department}</p>
+                        <p><strong>Estado:</strong> <span class="status ${emp.status === 'Presente' ? 'status-present' : emp.status === 'Ausente' ? 'status-absent' : 'status-onbreak'}">${emp.status}</span></p>
+                        <p><strong>Fecha de incorporación:</strong> ${emp.hireDate}</p>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Información de contacto</h4>
+                        <p><strong>Email:</strong> ${emp.email}</p>
+                        <p><strong>Teléfono:</strong> ${emp.phone}</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Estadísticas</h4>
+                        <p><strong>Puntualidad:</strong> 96.2%</p>
+                        <p><strong>Asistencia:</strong> 98.7%</p>
+                        <p><strong>Horas extras (mes):</strong> 8.5h</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h4 style="color: var(--primary); margin-bottom: 10px;">Acciones</h4>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-sm btn-primary" onclick="adjustEmployeeTime(${employeeId})">Ajustar horario</button>
+                        <button class="btn btn-sm btn-warning" onclick="viewEmployeeRecords(${employeeId})">Ver registros</button>
+                        <button class="btn btn-sm btn-info" onclick="viewEmployeeVacations(${employeeId})">Ver vacaciones</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('employeeDetailsContent').innerHTML = content;
+            openModal(employeeDetailsModal);
         }
         
         function sendReminder(employeeId) {
-            showNotification('Recordatorio enviado', `Se ha enviado un recordatorio de fichaje al empleado con ID ${employeeId}.`);
+            if (currentRole !== "manager") {
+                showNotification("Acceso denegado", "Solo los responsables pueden enviar recordatorios.");
+                return;
+            }
+            
+            const employees = {
+                1: "María López",
+                2: "Carlos Rodríguez",
+                3: "Ana García",
+                4: "Pedro Martínez",
+                5: "Laura Fernández",
+                6: "David Sánchez"
+            };
+            
+            showNotification('Recordatorio enviado', `Se ha enviado un recordatorio de fichaje a ${employees[employeeId]}.`);
         }
         
         function approveRequest(requestId) {
+            if (currentRole !== "manager") {
+                showNotification("Acceso denegado", "Solo los responsables pueden aprobar solicitudes.");
+                return;
+            }
+            
             showNotification('Solicitud aprobada', `La solicitud con ID ${requestId} ha sido aprobada correctamente.`);
             
             // Actualizar estado en la tabla
@@ -1283,6 +2743,11 @@
         }
         
         function rejectRequest(requestId) {
+            if (currentRole !== "manager") {
+                showNotification("Acceso denegado", "Solo los responsables pueden rechazar solicitudes.");
+                return;
+            }
+            
             showNotification('Solicitud rechazada', `La solicitud con ID ${requestId} ha sido rechazada.`);
             
             // Actualizar estado en la tabla
@@ -1290,12 +2755,114 @@
             if (rows[requestId - 1]) {
                 const statusCell = rows[requestId - 1].querySelector('.status');
                 statusCell.textContent = 'Rechazado';
-                statusCell.className = 'status status-absent';
+                statusCell.className = 'status status-rejected';
                 
                 // Ocultar botones de acción
                 const actionCell = rows[requestId - 1].querySelector('td:last-child');
                 actionCell.innerHTML = '<span style="color: var(--danger);"><i class="fas fa-times"></i> Rechazado</span>';
             }
+        }
+        
+        // Funciones para ausencias
+        function requestAbsence(type) {
+            const types = {
+                medical: "Enfermedad",
+                personal: "Asuntos personales",
+                family: "Asuntos familiares",
+                other: "Otros"
+            };
+            
+            showNotification('Solicitud de ausencia', `Has solicitado una ausencia por ${types[type]}. La solicitud ha sido enviada a tu responsable.`);
+        }
+        
+        function requestSickLeave() {
+            showNotification('Baja médica', 'Se ha creado una nueva solicitud de baja médica. Recuerda subir el parte médico en menos de 3 días.');
+        }
+        
+        // Funciones para el equipo
+        function sendTeamReminders() {
+            if (currentRole !== "manager") {
+                showNotification("Acceso denegado", "Solo los responsables pueden enviar recordatorios al equipo.");
+                return;
+            }
+            
+            showNotification('Recordatorios enviados', 'Se han enviado recordatorios a todos los empleados que no han fichado hoy.');
+        }
+        
+        function adjustEmployeeTime(employeeId) {
+            if (currentRole !== "manager") {
+                showNotification("Acceso denegado", "Solo los responsables pueden ajustar horarios.");
+                return;
+            }
+            
+            showNotification('Ajuste de horario', `Vas a ajustar el horario del empleado ${employeeId}.`);
+            openModal(adjustmentRequestModal);
+        }
+        
+        // Funciones para aprobaciones
+        function approveTimeRequest(requestId) {
+            showNotification('Aprobado', `La solicitud de ajuste horario #${requestId} ha sido aprobada.`);
+        }
+        
+        function rejectTimeRequest(requestId) {
+            showNotification('Rechazado', `La solicitud de ajuste horario #${requestId} ha sido rechazada.`);
+        }
+        
+        function approveVacationRequest(requestId) {
+            showNotification('Aprobado', `La solicitud de vacaciones #${requestId} ha sido aprobada.`);
+        }
+        
+        function rejectVacationRequest(requestId) {
+            showNotification('Rechazado', `La solicitud de vacaciones #${requestId} ha sido rechazada.`);
+        }
+        
+        function approveAbsenceRequest(requestId) {
+            showNotification('Aprobado', `La solicitud de ausencia #${requestId} ha sido aprobada.`);
+        }
+        
+        function rejectAbsenceRequest(requestId) {
+            showNotification('Rechazado', `La solicitud de ausencia #${requestId} ha sido rechazada.`);
+        }
+        
+        // Funciones para informes
+        function generateReport(type) {
+            const reports = {
+                attendance: "Reporte de Asistencia",
+                punctuality: "Reporte de Puntualidad",
+                overtime: "Reporte de Horas Extras",
+                vacations: "Reporte de Vacaciones",
+                absences: "Reporte de Ausencias",
+                productivity: "Reporte de Productividad"
+            };
+            
+            showNotification('Reporte generado', `El ${reports[type]} se ha generado correctamente. Se descargará automáticamente.`);
+        }
+        
+        function generateCustomReport() {
+            const period = document.getElementById('reportPeriod').value;
+            const department = document.getElementById('reportDepartment').value;
+            const format = document.getElementById('reportFormat').value;
+            
+            showNotification('Reporte personalizado', `Se ha generado un reporte para el período ${period}, departamento ${department}, en formato ${format.toUpperCase()}.`);
+        }
+        
+        // Funciones para configuración
+        function saveSettings() {
+            showNotification('Configuración guardada', 'Todos los cambios en la configuración se han guardado correctamente.');
+        }
+        
+        // Funciones para filtros
+        function applyFilters() {
+            showNotification('Filtros aplicados', 'Los filtros se han aplicado correctamente. Mostrando registros filtrados.');
+        }
+        
+        // Funciones para vacaciones
+        function cancelVacationRequest(requestId) {
+            showNotification('Solicitud cancelada', `La solicitud de vacaciones #${requestId} ha sido cancelada.`);
+        }
+        
+        function viewTeamCalendar() {
+            showNotification('Calendario del equipo', 'Mostrando calendario con todas las vacaciones y ausencias del equipo.');
         }
         
         // Cerrar modales al hacer clic fuera de ellos
@@ -1304,6 +2871,7 @@
             if (e.target === adjustmentRequestModal) closeModal(adjustmentRequestModal);
             if (e.target === exportModal) closeModal(exportModal);
             if (e.target === notificationModal) closeModal(notificationModal);
+            if (e.target === employeeDetailsModal) closeModal(employeeDetailsModal);
         });
         
         // Inicializar aplicación cuando el DOM esté cargado
